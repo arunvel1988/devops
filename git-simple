@@ -1,0 +1,14 @@
+git checkout dev
+
+
+git checkout stage
+git merge dev
+
+
+
+git checkout prod
+git merge stage
+
+
+git checkout prod
+git merge dev
