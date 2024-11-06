@@ -1,0 +1,56 @@
+import json
+import boto3
+import logging
+
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Initialize the SNS client
+sns_client = boto3.client('sns')
+
+# Define the SNS topic ARN
+SNS_TOPIC_ARN = 'arn:aws:sns:ap-south-1:585768155014:test'
+
+def lambda_handler(event, context):
+    """
+    Lambda function to handle EC2 instance state changes.
+    This function is triggered whenever an EC2 instance state changes.
+    It sends an email notification via SNS with the details of the state change.
+    """
+    # Log the received event
+    logger.info("Received event: " + json.dumps(event, indent=2))
+    
+    # Check if the event is an EC2 instance state change notification
+    if event['source'] == 'aws.ec2' and event['detail-type'] == 'EC2 Instance State-change Notification':
+        # Get the instance ID and state from the event
+        instance_id = event['detail']['instance-id']
+        state = event['detail']['state']
+        
+        # Log the instance ID and state
+        logger.info(f"Instance ID: {instance_id}, State: {state}")
+        
+        # Create the message for the SNS topic
+        message = f"""
+        EC2 Instance State Change Notification
+        
+        Instance ID: {instance_id}
+        New State: {state}
+        """
+        
+        # Publish the message to the SNS topic
+        try:
+            response = sns_client.publish(
+                TopicArn=SNS_TOPIC_ARN,
+                Message=message,
+                Subject='EC2 Instance State Change'
+            )
+            logger.info(f"Message sent to SNS topic! Message ID: {response['MessageId']}")
+        except Exception as e:
+            logger.error(f"Error sending message to SNS topic. Error: {str(e)}")
+            raise e
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Lambda function executed successfully!')
+    }
