@@ -1,0 +1,35 @@
+# Initialize a new Git repository
+git init
+
+# Create a new file named 1.txt
+echo "Hello, World!" > 1.txt
+
+# Add the file to the staging area
+git add 1.txt
+
+# Commit the file to the repository
+git commit -m "Add 1.txt with initial content"
+
+# Modify the file 1.txt
+echo "This is a modification." >> 1.txt
+
+# Add the modified file to the staging area
+git add 1.txt
+
+# Commit the changes to the repository
+git commit -m "Modify 1.txt with additional content"
+
+# Revert the last commit
+git revert HEAD
+
+# Show the commit history
+git log
+
+
+before staging
+git checkout -- 1.txt
+
+in staging
+git reset HEAD 1.txt
+
+git revert <commit-hash>
