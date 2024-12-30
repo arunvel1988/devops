@@ -1,0 +1,45 @@
+FROM jenkins/inbound-agent:latest
+
+USER root
+
+# Install Docker CLI
+RUN apt-get update && apt-get install -y docker.io && rm -rf /var/lib/apt/lists/*
+
+# Add Jenkins user to the Docker group
+RUN groupadd -g 999 docker && usermod -aG docker jenkins
+
+USER jenkins
+
+
+
+docker build -t jenkins-agent-with-docker .
+
+
+
+docker run -d \
+  --name jenkins-agent \
+  -e JENKINS_URL=http://<jenkins-master-host>:8080 \
+  -e JENKINS_SECRET=<agent-secret> \
+  -e JENKINS_AGENT_NAME=docker-agent \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins-agent-with-docker
+
+
+
+pipeline {
+    agent { label 'docker-agent' }
+
+    stages {
+        stage('Build and Push') {
+            steps {
+                sh '''
+                docker build -t your-docker-image:latest .
+                docker push your-docker-image:latest
+                '''
+            }
+        }
+    }
+}
+
+
+
