@@ -1,0 +1,31 @@
+https://github.com/arunvel1988/docker_app_ci
+
+
+https://github.com/arunvel1988/docker_app_cd
+
+
+https://index.docker.io/v2/
+
+arunvel1988
+
+
+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
+
+
+arunvel1988
+
+Ssjcoe123@#
+
+
+arunvel1988/test-jan-2025-v1
+
+
+
+
+Argocd Server
+35.154.150.187:9668
+
+
+kubectl port-forward service/guestbook-ui 8080:8010
+
+
