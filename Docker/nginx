@@ -1,0 +1,11 @@
+sudo amazon-linux-extras enable nginx1
+sudo yum install nginx -y
+############################################
+sudo apt update
+sudo apt install nginx -y
+############################################
+sudo systemctl start nginx
+sudo systemctl enable nginx
+############################################
+sudo mv index.html /usr/share/nginx/html/index.html
+sudo systemctl restart nginx

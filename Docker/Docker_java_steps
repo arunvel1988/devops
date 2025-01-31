@@ -1,0 +1,122 @@
+############################################################
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, Devops!");
+    }
+}
+
+####################################################
+
+sudo yum install -y java-11-amazon-corretto-devel
+
+
+javac HelloWorld.java
+
+
+#######################################################
+
+# Step 1: Use an official OpenJDK image as the base image
+FROM openjdk:17-jdk-slim
+
+# Step 2: Set the working directory inside the container
+WORKDIR /app
+
+# Step 3: Copy the compiled Java class file into the container
+COPY HelloWorld.class /app/
+
+# Step 4: Define the command to run the Java application
+CMD ["java", "HelloWorld"]
+
+
+###########################################################
+
+
+docker build -t java-hello-world .
+
+##############################################################
+
+
+docker run java-hello-world
+
+################################################################
+
+
+docker login
+docker tag java-devops-world arunvel1988/java-hello-world
+docker push arunvel1988/java-hello-world
+
+###############################################################################
+
+###################################################################################################
+
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, Docker!");
+    }
+}
+
+
+
+###################################################################################################
+
+
+# Step 1: Use an official OpenJDK image as the base image
+FROM openjdk:17-jdk-slim
+
+# Step 2: Set the working directory inside the container
+WORKDIR /app
+
+# Step 3: Copy the Java source code into the container
+COPY HelloWorld.java /app/
+
+# Step 4: Compile the Java code inside the container
+RUN javac HelloWorld.java
+
+# Step 5: Define the command to run the compiled Java class file
+CMD ["java", "HelloWorld"]
+
+###################################################################################################
+
+docker build -t java-hello-world .
+
+##############################################################
+
+###################################################################################################
+
+
+# Step 1: Use a build image to compile the Java code (heavy image with build tools)
+FROM openjdk:17-jdk-slim AS build
+
+# Set the working directory in the build stage
+WORKDIR /app
+
+# Copy the Java source code into the container
+COPY HelloWorld.java /app/
+
+# Compile the Java source code inside the container
+RUN javac HelloWorld.java
+
+# Step 2: Use a smaller base image to run the application (this is the final, lightweight image)
+FROM openjdk:17-jre-slim
+
+# Set the working directory in the final image
+WORKDIR /app
+
+# Copy the compiled HelloWorld.class file from the build stage
+COPY --from=build /app/HelloWorld.class /app/
+
+# Define the command to run the compiled Java code
+CMD ["java", "HelloWorld"]
+
+###################################################################################################
+
+docker build -t java-hello-world .
+
+
+
+###################################################################################################
+
+
+
