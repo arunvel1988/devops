@@ -1,0 +1,166 @@
+###############################################################################
+
+---
+- name: Create an EC2 instance
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Launch an EC2 instance
+      amazon.aws.ec2_instance:
+        key_name: my-keypair
+        instance_type: t2.micro
+        image_id: ami-0c55b159cbfafe1f0 # Amazon Linux 2 AMI
+        region: us-east-1
+        tags:
+          Name: example-instance
+      register: ec2
+
+    - name: Print instance ID
+      debug:
+        msg: "Instance ID: {{ ec2.instance_ids[0] }}"
+
+
+############################################################################################
+
+
+---
+- name: Create an S3 bucket
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create S3 bucket
+      amazon.aws.s3_bucket:
+        name: my-unique-bucket-name-12345 # Replace with a unique name
+        region: us-east-1
+        public_access: true
+        tags:
+          Name: example-bucket
+
+####################################################################################################
+
+
+---
+- name: Create a VPC with subnets
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create a VPC
+      amazon.aws.ec2_vpc_net:
+        name: example-vpc
+        cidr_block: 10.0.0.0/16
+        region: us-east-1
+      register: vpc
+
+    - name: Create a public subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.1.0/24
+        region: us-east-1
+        az: us-east-1a
+        tags:
+          Name: public-subnet
+
+    - name: Create a private subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.0.2.0/24
+        region: us-east-1
+        az: us-east-1a
+        tags:
+          Name: private-subnet
+
+
+
+######################################################################################################
+
+
+---
+- name: Create ASG with ALB
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create a launch configuration
+      amazon.aws.ec2_lc:
+        name: example-launch-config
+        image_id: ami-0c55b159cbfafe1f0 # Amazon Linux 2 AMI
+        instance_type: t2.micro
+        security_groups: ["sg-12345678"] # Replace with your security group ID
+        user_data: |
+          #!/bin/bash
+          echo "Hello, World!" > index.html
+          nohup python -m SimpleHTTPServer 80 &
+
+    - name: Create an Auto Scaling Group
+      amazon.aws.ec2_asg:
+        name: example-asg
+        launch_config_name: example-launch-config
+        min_size: 1
+        max_size: 3
+        desired_capacity: 2
+        vpc_zone_identifier: ["subnet-12345678"] # Replace with your subnet ID
+        tags:
+          - key: Name
+            value: example-asg
+            propagate_at_launch: true
+
+    - name: Create an Application Load Balancer
+      amazon.aws.elb_application_lb:
+        name: example-lb
+        subnets: ["subnet-12345678"] # Replace with your subnet ID
+        security_groups: ["sg-12345678"] # Replace with your security group ID
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: example-tg
+
+    - name: Create a target group
+      amazon.aws.elb_target_group:
+        name: example-tg
+        protocol: HTTP
+        port: 80
+        vpc_id: "vpc-12345678" # Replace with your VPC ID
+
+##############################################################################################
+
+
+---
+- name: Create an EC2 instance and use dynamic inventory
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Launch an EC2 instance
+      amazon.aws.ec2_instance:
+        key_name: my-keypair
+        instance_type: t2.micro
+        image_id: ami-0c55b159cbfafe1f0 # Amazon Linux 2 AMI
+        region: us-east-1
+        tags:
+          Name: example-instance
+      register: ec2
+
+    - name: Add instance to dynamic inventory
+      add_host:
+        name: "{{ ec2.instances[0].public_ip }}"
+        groups: ec2_instances
+
+- name: Configure EC2 instances
+  hosts: ec2_instances
+  become: yes
+  tasks:
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+
+
+
+########################################################################################
+
+
+pip install ansible
+ansible-galaxy collection install amazon.aws
+
+
+ansible-playbook devops-playbook.yaml
