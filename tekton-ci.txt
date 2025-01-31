@@ -26,6 +26,6 @@ Argocd Server
 35.154.150.187:9668
 
 
-kubectl port-forward service/guestbook-ui 8080:8010
+kubectl port-forward svc/guestbook-ui 8080:8010 --address 0.0.0.0
 
 
