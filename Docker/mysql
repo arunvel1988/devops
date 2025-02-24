@@ -1,0 +1,11 @@
+docker exec -it mysql 
+
+mysql -u root -p
+
+show databases;
+
+use database_name;
+
+show tables;
+
+select * from <table_name>;
